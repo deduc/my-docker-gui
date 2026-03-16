@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>My Docker GUI - Dashboard</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <link rel="stylesheet" href="../../styles/components.css">
+</head>
+<body>
+    <div id="app">
+        <header-component></header-component>
+        
+        <main class="dashboard">
+            <action-section id="actionSection"></action-section>
+
+            <div class="resources-grid">
+                <resource-section id="containersSection"></resource-section>
+                <resource-section id="imagesSection"></resource-section>
+                <resource-section id="volumesSection"></resource-section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Components -->
+    <script src="../../components/header.js"></script>
+    <script src="../../components/container-card.js"></script>
+    <script src="../../components/image-card.js"></script>
+    <script src="../../components/volume-card.js"></script>
+    <script src="../../components/resource-section.js"></script>
+    <script src="../../components/action-section.js"></script>
+    
+    <!-- API Centralizada -->
+    <script src="../../api/app-utils.js"></script>
+    
+    <!-- Page Script -->
+    <script src="index.js"></script>
+</body>
+</html>

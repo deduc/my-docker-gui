@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Volúmenes - My Docker GUI</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header Component -->
+        <header-component></header-component>
+        
+        <!-- Main Content -->
+        <main class="dashboard">
+            <div class="page-header">
+                <h1>💾 Todos los Volúmenes</h1>
+                <button class="btn btn-small refresh-btn" onclick="refreshAllVolumes()">🔄 Actualizar Todo</button>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="searchFilter">Buscar:</label>
+                    <input type="text" id="searchFilter" class="form-control" placeholder="Nombre del volumen..." oninput="filterVolumes()">
+                </div>
+                <div class="filter-group">
+                    <label for="driverFilter">Filtrar por driver:</label>
+                    <select id="driverFilter" class="form-control" onchange="filterVolumes()">
+                        <option value="all">Todos</option>
+                        <option value="local">Local</option>
+                        <option value="overlay">Overlay</option>
+                        <option value="bind">Bind</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Volumes Grid -->
+            <div class="all-volumes-section">
+                <div id="allVolumesList" class="resource-grid"></div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="back-section">
+                <a href="../home.html" class="btn btn-secondary">← Volver al Dashboard</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Components -->
+    <script src="../components/header.js"></script>
+    <script src="../components/volume-card.js"></script>
+    
+    <!-- Page Script -->
+    <script src="../pages/volumes.js"></script>
+</body>
+</html>

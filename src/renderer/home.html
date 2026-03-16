@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>My Docker GUI - Dashboard</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header Component -->
+        <header-component></header-component>
+        
+        <!-- Main Content -->
+        <main class="dashboard">
+            <!-- Docker Resources Sections -->
+            <div class="resources-grid">
+                <!-- Containers Section -->
+                <section class="resource-section">
+                    <div class="section-header">
+                        <h2>🐳 Contenedores</h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="containersCount" class="resource-count">0</span>
+                            <button class="btn btn-small refresh-btn" onclick="refreshContainers()">🔄 Actualizar</button>
+                        </div>
+                    </div>
+                    <div id="containersPreview" class="resource-preview"></div>
+                    <div class="section-footer">
+                        <a href="pages/containers.html" class="btn-view-more">
+                            📋 Ver todos los contenedores
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Images Section -->
+                <section class="resource-section">
+                    <div class="section-header">
+                        <h2>📦 Imágenes</h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="imagesCount" class="resource-count">0</span>
+                            <button class="btn btn-small refresh-btn" onclick="refreshImages()">🔄 Actualizar</button>
+                        </div>
+                    </div>
+                    <div id="imagesPreview" class="resource-preview"></div>
+                    <div class="section-footer">
+                        <a href="pages/images.html" class="btn-view-more">
+                            📋 Ver todas las imágenes
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Volumes Section -->
+                <section class="resource-section">
+                    <div class="section-header">
+                        <h2>💾 Volúmenes</h2>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="volumesCount" class="resource-count">0</span>
+                            <button class="btn btn-small refresh-btn" onclick="refreshVolumes()">🔄 Actualizar</button>
+                        </div>
+                    </div>
+                    <div id="volumesPreview" class="resource-preview"></div>
+                    <div class="section-footer">
+                        <a href="pages/volumes.html" class="btn-view-more">
+                            📋 Ver todos los volúmenes
+                        </a>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-section">
+                <h2>Crear Nuevos Recursos</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="navigateTo('create-single')">
+                        🐳 Contenedor Individual
+                    </button>
+                    <button class="btn btn-primary" onclick="navigateTo('create-multi')">
+                        🔗 Múltiples Contenedores
+                    </button>
+                    <button class="btn btn-primary" onclick="navigateTo('create-compose')">
+                        📄 Docker Compose
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Components -->
+    <script src="components/header.js"></script>
+    <script src="components/container-card.js"></script>
+    <script src="components/image-card.js"></script>
+    <script src="components/volume-card.js"></script>
+    
+    <!-- API Centralizada -->
+    <script src="api/app-utils.js"></script>
+    
+    <!-- Pages -->
+    <script src="pages/home.js"></script>
+</body>
+</html>

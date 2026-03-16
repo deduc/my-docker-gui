@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Crear Contenedor Individual - My Docker GUI</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header Component -->
+        <header-component></header-component>
+        
+        <!-- Main Content -->
+        <main class="create-layout">
+            <div class="create-header">
+                <h1>🐳 Crear Contenedor Individual</h1>
+                <p>Configura y despliega un nuevo contenedor Docker</p>
+            </div>
+            
+            <div class="create-content">
+                <!-- Form Section (70%) -->
+                <div class="form-section">
+                    <form id="containerForm">
+                        <div class="form-group">
+                            <label for="imageName">Nombre de la Imagen:</label>
+                            <input type="text" id="imageName" name="imageName" class="form-control" placeholder="ej: nginx, ubuntu:20.04, mysql:8.0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="containerName">Nombre del Contenedor:</label>
+                            <input type="text" id="containerName" name="containerName" class="form-control" placeholder="ej: mi-nginx, mi-base-de-datos">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="version">Versión (opcional):</label>
+                            <input type="text" id="version" name="version" class="form-control" placeholder="ej: latest, 20.04, 8.0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Puertos Expuestos:</label>
+                            <div id="portMappings" class="port-mappings">
+                                <div class="port-mapping">
+                                    <input type="number" placeholder="Puerto host" class="form-control host-port">
+                                    <span>:</span>
+                                    <input type="number" placeholder="Puerto contenedor" class="form-control container-port">
+                                    <button type="button" class="btn btn-small btn-remove" onclick="removePortMapping(this)">Eliminar</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-small" onclick="addPortMapping()">+ Añadir Puerto</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="volumes">Volúmenes (opcional):</label>
+                            <textarea id="volumes" name="volumes" class="form-control" rows="3" placeholder="ej: /ruta/local:/ruta/contenedor&#10;/otra/ruta:/ruta/en/contenedor"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="environment">Variables de Entorno (opcional):</label>
+                            <textarea id="environment" name="environment" class="form-control" rows="3" placeholder="ej: MYSQL_ROOT_PASSWORD=mipassword&#10;DATABASE_NAME=midb"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="command">Comando a ejecutar (opcional):</label>
+                            <input type="text" id="command" name="command" class="form-control" placeholder="ej: nginx -g 'daemon off;'">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Generar Comando</button>
+                            <button type="button" class="btn btn-secondary" onclick="clearForm()">Limpiar</button>
+                            <button type="button" class="btn" onclick="executeCommand()">▶️ Ejecutar</button>
+                            <button type="button" class="btn" onclick="goBack()">← Volver</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Output Section (30%) -->
+                <div class="output-section">
+                    <h3>Comando Generado:</h3>
+                    <div id="outputContent" class="output-content">
+                        El comando aparecerá aquí cuando generes la configuración...
+                    </div>
+                    <div class="output-actions">
+                        <button class="btn btn-small" onclick="copyToClipboard()">📋 Copiar</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Components -->
+    <script src="../components/header.js"></script>
+    
+    <!-- Page Script -->
+    <script src="../pages/create-single.js"></script>
+</body>
+</html>
