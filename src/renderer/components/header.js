@@ -1,140 +1,124 @@
-class Header extends HTMLElement {
+// Importar la clase base
+// Nota: En un entorno real, esto sería: import { BaseComponent } from '../utils/ComponentLoader.js';
+
+class Header extends BaseComponent {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        this.isDockerAlive = this.getDockerStatus();
+        this.dockerVersion = null;
+    }
+
+    // Obtener estado de Docker desde localStorage
+    getDockerStatus() {
+        const stored = localStorage.getItem('isDockerAlive');
+        if (stored !== null) {
+            return stored === 'true';
+        }
+        localStorage.setItem('isDockerAlive', 'false');
+        return false;
+    }
+
+    // Guardar estado de Docker en localStorage
+    setDockerStatus(status) {
+        this.isDockerAlive = status;
+        localStorage.setItem('isDockerAlive', status.toString());
+        this.updateDockerChip();
+    }
+
+    // Verificar si Docker está disponible
+    async checkDockerAvailability() {
+        if (!this.isDockerAlive) {
+            console.warn('Docker no está disponible. Abortando ejecución de comandos.');
+            return false;
+        }
+        return true;
+    }
+
+    // Verificar instalación de Docker
+    async checkDockerInstallation() {
+        console.log('[Header] Verificando instalación de Docker...');
+        try {
+            const result = await window.electronAPI?.checkDockerVersion();
+            console.log('[Header] Resultado de checkDockerVersion:', result);
+            
+            if (result && result.success) {
+                this.dockerVersion = result.version;
+                this.setDockerStatus(true);
+                console.log('[Header] Docker disponible, versión:', result.version);
+                return {
+                    success: true,
+                    version: result.version,
+                    alive: true
+                };
+            } else {
+                this.dockerVersion = null;
+                this.setDockerStatus(false);
+                console.log('[Header] Docker no disponible:', result?.error);
+                return {
+                    success: false,
+                    error: result?.error || 'Docker no está disponible',
+                    alive: false
+                };
+            }
+        } catch (error) {
+            console.error('[Header] Error verificando Docker:', error);
+            this.dockerVersion = null;
+            this.setDockerStatus(false);
+            return {
+                success: false,
+                error: error.message,
+                alive: false
+            };
+        }
+    }
+
+    // Actualizar el chip de Docker
+    updateDockerChip() {
+        const versionElement = this.$('#docker-version');
+        
+        console.log('[Header] Actualizando chip Docker:', {
+            isDockerAlive: this.isDockerAlive,
+            dockerVersion: this.dockerVersion,
+            versionElement: !!versionElement
+        });
+        
+        if (!versionElement) return;
+        
+        if (this.isDockerAlive && this.dockerVersion) {
+            versionElement.innerHTML = `
+                <span class="chip-icon">✅</span>
+                <span class="chip-text">Docker ${this.dockerVersion}</span>
+            `;
+            versionElement.className = 'docker-version-chip success';
+            console.log('[Header] Chip actualizado a éxito');
+        } else {
+            versionElement.innerHTML = `
+                <span class="chip-icon">❌</span>
+                <span class="chip-text">Docker no disponible</span>
+            `;
+            versionElement.className = 'docker-version-chip error';
+            console.log('[Header] Chip actualizado a error');
+        }
     }
 
     connectedCallback() {
-        this.render();
+        this.render('./components/header.html').then(() => {
+            this.initDockerCheck();
+        });
     }
 
-    render() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    width: 100%;
-                }
+    async initDockerCheck() {
+        this.updateDockerChip();
+        await this.checkDockerInstallation();
+    }
 
-                .header {
-                    background: #2f3136;
-                    color: #dcddde;
-                    padding: 2rem;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-                    border-bottom: 1px solid #202225;
-                }
-
-                .header-content {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 2rem;
-                    align-items: center;
-                    max-width: 1200px;
-                    margin: 0 auto;
-                }
-
-                .header-title {
-                    text-align: left;
-                }
-
-                .header-nav {
-                    text-align: right;
-                }
-
-                .header h1 {
-                    margin: 0;
-                    font-size: 2.5rem;
-                    font-weight: 700;
-                    margin-bottom: 0.5rem;
-                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-                }
-
-                .header .subtitle {
-                    font-size: 1.1rem;
-                    opacity: 0.9;
-                    margin: 0;
-                    font-weight: 300;
-                }
-
-                .nav-buttons {
-                    display: flex;
-                    gap: 1rem;
-                    justify-content: flex-end;
-                    flex-wrap: wrap;
-                }
-
-                .nav-btn {
-                    background: #4f545c;
-                    color: #dcddde;
-                    border: 2px solid #4f545c;
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 1rem;
-                    transition: all 0.3s ease;
-                    text-decoration: none;
-                    display: inline-block;
-                }
-
-                .nav-btn:hover {
-                    background: #5865f2;
-                    border-color: #5865f2;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 8px rgba(88, 101, 242, 0.3);
-                }
-
-                .nav-btn.active {
-                    background: #5865f2;
-                    border-color: #5865f2;
-                }
-
-                @media (max-width: 768px) {
-                    .header {
-                        padding: 1.5rem;
-                    }
-
-                    .header h1 {
-                        font-size: 2rem;
-                    }
-
-                    .header .subtitle {
-                        font-size: 1rem;
-                    }
-
-                    .nav-buttons {
-                        gap: 0.5rem;
-                    }
-
-                    .nav-btn {
-                        padding: 0.6rem 1.2rem;
-                        font-size: 0.9rem;
-                    }
-                }
-            </style>
-
-            <div class="header">
-                <div class="header-content">
-                    <div class="header-title">
-                        <h1>MyDocker GUI</h1>
-                        <p class="subtitle">Interfaz gráfica para gestionar Docker sin necesidad de memorizar comandos</p>
-                    </div>
-                    
-                    <div class="header-nav">
-                        <div class="nav-buttons">
-                            <a href="#dashboard" class="nav-btn" data-page="dashboard">Dashboard</a>
-                            <a href="#create-single" class="nav-btn" data-page="create-single">Crear Contenedor</a>
-                            <a href="#create-multiple" class="nav-btn" data-page="create-multiple">Múltiples Contenedores</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
+    // Hook que se ejecuta después del renderizado
+    onAfterRender(shadowRoot) {
         this.attachEventListeners();
     }
 
     attachEventListeners() {
-        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        const navButtons = this.$$('.nav-btn');
         navButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -146,7 +130,7 @@ class Header extends HTMLElement {
 
     navigate(page) {
         // Update active state
-        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        const navButtons = this.$$('.nav-btn');
         navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.page === page);
         });
@@ -156,7 +140,7 @@ class Header extends HTMLElement {
     }
 
     setActivePage(page) {
-        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        const navButtons = this.$$('.nav-btn');
         navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.page === page);
         });

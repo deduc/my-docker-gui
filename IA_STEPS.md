@@ -198,9 +198,33 @@ class ComponentName extends HTMLElement {
 
 ### **Al Añadir Nueva Página**
 1. **Crear Component**: Nuevo archivo en `pages/`
-2. **Actualizar Router**: Añadir ruta en `router.js`
-3. **Header Navigation**: Añadir enlace si es necesario
-4. **Estilos**: Usar variables CSS existentes
+2. **Crear HTML**: Archivo `.html` correspondiente en `pages/`
+3. **Actualizar Router**: Añadir ruta en `router.js`
+4. **Header Navigation**: Añadir enlace si es necesario
+5. **Estilos**: Usar variables CSS existentes
+
+### **📌 REGLA IMPORTANTE: Separación HTML/JS**
+**SIEMPRE** que se cree una página nueva:
+- El HTML debe ir en un archivo `.html` separado (ej: `dashboard.html`)
+- El JavaScript debe ir en un archivo `.js` separado (ej: `dashboard.js`)
+- El método `render()` del componente JavaScript **SIEMPRE** debe cargar el contenido desde el archivo HTML usando:
+  ```javascript
+  this.render('./pages/nombre-pagina.html')
+  ```
+- **NUNCA** embeber HTML directamente en el JavaScript como string
+- Esto aplica a TODOS los componentes: páginas, componentes reutilizables, etc.
+
+**Ejemplo correcto:**
+```javascript
+class NuevaPagina extends BaseComponent {
+    connectedCallback() {
+        this.render('./pages/nueva-pagina.html').then(() => {
+            this.attachEventListeners();
+            this.loadData();
+        });
+    }
+}
+```
 
 ### **Al Modificar Estilos**
 1. **CSS Variables**: Priorizar variables globales

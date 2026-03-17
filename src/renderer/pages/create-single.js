@@ -14,6 +14,33 @@ class CreateSinglePage extends HTMLElement {
         };
     }
 
+    // Helper class to handle Docker images properly
+    createDockerImage(imageData) {
+        console.log('[Create Single] Raw image data:', imageData);
+        
+        // Extract clean version from tag (should not contain ID)
+        let version = imageData.tag || 'latest';
+        
+        // If tag contains the ID, extract only the tag part
+        if (version.includes(':')) {
+            version = version.split(':')[0];
+        }
+        
+        // Ensure version doesn't contain the ID
+        if (version.length > 20 || /^[a-f0-9]{12,}$/i.test(version)) {
+            version = 'latest'; // Fallback to latest if it looks like an ID
+        }
+        
+        const dockerImage = {
+            id: imageData.id || '',
+            name: imageData.repository || '',
+            version: version
+        };
+        
+        console.log('[Create Single] Created DockerImage:', dockerImage);
+        return dockerImage;
+    }
+
     connectedCallback() {
         this.render();
         this.loadImages();
@@ -22,24 +49,40 @@ class CreateSinglePage extends HTMLElement {
 
     async loadImages() {
         try {
+            console.log('[Create Single] Loading images...');
             const result = await window.electronAPI.getImages();
+            console.log('[Create Single] Images result:', result);
+            
             if (result.success) {
-                this.images = result.data;
+                // Convert raw image data to DockerImage objects
+                this.images = result.data.map(img => this.createDockerImage(img));
+                console.log('[Create Single] Images converted to DockerImage objects:', this.images);
                 this.updateImageSelect();
+            } else {
+                console.error('[Create Single] Error loading images:', result.error);
             }
         } catch (error) {
-            console.error('Error loading images:', error);
+            console.error('[Create Single] Exception loading images:', error);
         }
     }
 
     updateImageSelect() {
         const imageSelect = this.shadowRoot.getElementById('image-select');
+        console.log('[Create Single] Updating image select with DockerImage objects:', this.images);
+        
+        // Filter out images without name, and create clean options with just name
+        const validImages = this.images.filter(img => img.name);
+        console.log('[Create Single] Valid images after filtering:', validImages);
+        
         imageSelect.innerHTML = `
             <option value="">Selecciona una imagen...</option>
-            ${this.images.map(img => 
-                `<option value="${img.repository}:${img.tag}">${img.repository}:${img.tag}</option>`
-            ).join('')}
+            ${validImages.map(img => {
+                console.log(`[Create Single] Image option: ${img.name} (version: ${img.version})`);
+                return `<option value="${img.name}">${img.name}</option>`;
+            }).join('')}
         `;
+        
+        console.log('[Create Single] Image select updated with names only');
     }
 
     render() {
@@ -414,6 +457,7 @@ imagen:tag
         const { index, field } = element.dataset;
         
         if (element.id === 'image-select') {
+            // Store the selected image name, but we'll resolve the full DockerImage in executeCommand
             this.formData.image = element.value;
         } else if (element.id === 'container-name') {
             this.formData.name = element.value;
@@ -579,21 +623,66 @@ imagen:tag
     }
 
     async executeCommand() {
-        const preview = this.shadowRoot.getElementById('command-preview');
-        const command = preview.textContent.trim();
-        
         try {
-            const result = await window.electronAPI.dockerCommand(command);
+            console.log('[Create Single] Form data image:', this.formData.image);
+            console.log('[Create Single] Available images:', this.images);
+            
+            // Find the selected DockerImage object
+            const selectedImage = this.images.find(img => img.name === this.formData.image);
+            console.log('[Create Single] Selected DockerImage:', selectedImage);
+            
+            if (!selectedImage) {
+                throw new Error('Por favor selecciona una imagen válida');
+            }
+
+            // Build the image string correctly
+            const imageString = `${selectedImage.name}:${selectedImage.version}`;
+            console.log('[Create Single] Image string to use:', imageString);
+
+            // Build container options from form data
+            const options = {
+                image: imageString,
+                name: this.formData.name || undefined,
+                detached: this.formData.detached,
+                remove: this.formData.remove
+            };
+
+            console.log('[Create Single] Container options:', options);
+
+            // Add ports if specified
+            const validPorts = this.formData.ports.filter(p => p.host && p.container);
+            if (validPorts.length > 0) {
+                options.ports = validPorts.map(p => `${p.host}:${p.container}`);
+            }
+
+            // Add volumes if specified
+            const validVolumes = this.formData.volumes.filter(v => v.host && v.container);
+            if (validVolumes.length > 0) {
+                options.volumes = validVolumes.map(v => `${v.host}:${v.container}`);
+            }
+
+            // Add environment variables if specified
+            const validEnv = this.formData.environment.filter(e => e.key && e.value);
+            if (validEnv.length > 0) {
+                options.environment = {};
+                validEnv.forEach(e => {
+                    options.environment[e.key] = e.value;
+                });
+            }
+
+            console.log('[Create Single] Final container options:', options);
+
+            const result = await window.electronAPI.runContainer(options);
             
             if (result.success) {
-                alert('Comando ejecutado exitosamente:\n\n' + result.data.stdout);
+                alert('Contenedor creado exitosamente:\n\n' + result.data.stdout);
                 // Navigate back to dashboard
                 window.appRouter.navigate('dashboard');
             } else {
-                alert('Error al ejecutar comando:\n\n' + result.error);
+                alert('Error al crear contenedor:\n\n' + result.error);
             }
         } catch (error) {
-            alert('Error al ejecutar comando:\n\n' + error.message);
+            alert('Error al crear contenedor:\n\n' + error.message);
         }
     }
 }

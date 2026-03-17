@@ -2,6 +2,18 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const dockerService = require('./docker-service');
 
+// Hot reload para desarrollo
+if (process.argv.includes('--dev')) {
+    try {
+        require('electron-reload')(__dirname, {
+            electron: path.join(__dirname, '../../node_modules/.bin/electron'),
+            hardResetMethod: 'exit'
+        });
+    } catch (error) {
+        console.log('Electron reload not available in production');
+    }
+}
+
 let mainWindow;
 
 function createWindow() {
@@ -45,6 +57,78 @@ app.on('window-all-closed', () => {
 ipcMain.handle('docker-command', async (event, command) => {
     try {
         const result = await dockerService.executeCommand(command);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Handler para verificar versión de Docker
+ipcMain.handle('check-docker-version', async () => {
+    try {
+        const result = await dockerService.executeCommand('docker --version');
+        console.log('[Main] Docker version result:', result);
+        
+        // Extraer versión del stdout
+        const versionMatch = result.stdout.match(/Docker version (\d+\.\d+\.\d+)/);
+        const version = versionMatch ? versionMatch[1] : result.stdout.trim();
+        
+        console.log('[Main] Extracted Docker version:', version);
+        return { success: true, version: version };
+    } catch (error) {
+        console.error('[Main] Error checking Docker version:', error);
+        return { success: false, error: 'Docker no está instalado o no está en ejecución' };
+    }
+});
+
+ipcMain.handle('run-container', async (event, options) => {
+    try {
+        const result = await dockerService.runContainer(options);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('start-container', async (event, containerId) => {
+    try {
+        const result = await dockerService.startContainer(containerId);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('stop-container', async (event, containerId) => {
+    try {
+        const result = await dockerService.stopContainer(containerId);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('pause-container', async (event, containerId) => {
+    try {
+        const result = await dockerService.pauseContainer(containerId);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('unpause-container', async (event, containerId) => {
+    try {
+        const result = await dockerService.unpauseContainer(containerId);
+        return { success: true, data: result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('remove-container', async (event, containerId) => {
+    try {
+        const result = await dockerService.removeContainer(containerId);
         return { success: true, data: result };
     } catch (error) {
         return { success: false, error: error.message };

@@ -35,13 +35,17 @@ class CreateMultiplePage extends HTMLElement {
 
     updateImageSelects() {
         const imageSelects = this.shadowRoot.querySelectorAll('.image-select');
+        const validImages = this.images.filter(img => img.repository);
+        
         imageSelects.forEach(select => {
             const serviceIndex = select.dataset.serviceIndex;
             select.innerHTML = `
                 <option value="">Selecciona una imagen...</option>
-                ${this.images.map(img => 
-                    `<option value="${img.repository}:${img.tag}">${img.repository}:${img.tag}</option>`
-                ).join('')}
+                ${validImages.map(img => {
+                    const imageName = img.repository;
+                    const imageValue = `${imageName}:latest`;
+                    return `<option value="${imageValue}">${imageName}</option>`;
+                }).join('')}
             `;
         });
     }
@@ -149,7 +153,7 @@ class CreateMultiplePage extends HTMLElement {
                 }
 
                 .dynamic-list {
-                    border: 1px solid #4f545c;
+o                     border: 1px solid #4f545c;
                     border-radius: 6px;
                     padding: 0.75rem;
                     margin-bottom: 0.5rem;
