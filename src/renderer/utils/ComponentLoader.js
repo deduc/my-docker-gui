@@ -176,3 +176,9 @@ class BaseComponent extends HTMLElement {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { ComponentLoader, BaseComponent };
 }
+
+// Exportar para uso global en el navegador
+if (typeof window !== 'undefined') {
+    window.BaseComponent = BaseComponent;
+    window.ComponentLoader = ComponentLoader;
+}

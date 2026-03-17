@@ -1,8 +1,8 @@
-class CreateSinglePage extends HTMLElement {
+class CreateSinglePage extends BaseComponent {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.images = [];
+        this.activeTab = 'docker'; // Estado inicial del botón activo
         this.formData = {
             image: '',
             name: '',
@@ -42,9 +42,30 @@ class CreateSinglePage extends HTMLElement {
     }
 
     connectedCallback() {
-        this.render();
-        this.loadImages();
-        this.attachEventListeners();
+        console.log('[Create Single] connectedCallback started');
+        
+        this.render('./pages/create-single.html').then(() => {
+            console.log('[Create Single] HTML rendered successfully');
+            
+            // Verificar si los elementos existen
+            const formSection = this.shadowRoot.querySelector('.form-section');
+            const previewSection = this.shadowRoot.querySelector('.preview-section');
+            
+            console.log('[Create Single] Elements found:', {
+                formSection: !!formSection,
+                previewSection: !!previewSection
+            });
+            
+            // Inicializar listas dinámicas después de que el HTML esté renderizado
+            this.initializeDynamicLists();
+            this.loadImages();
+            this.attachEventListeners();
+        }).catch(error => {
+            console.error('[Create Single] Error rendering HTML:', error);
+        });
+        
+        // Guardar instancia globalmente para acceso desde onclick
+        window.createSinglePage = this;
     }
 
     async loadImages() {
@@ -85,346 +106,48 @@ class CreateSinglePage extends HTMLElement {
         console.log('[Create Single] Image select updated with names only');
     }
 
-    render() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    padding: 2rem;
-                    max-width: 1200px;
-                    margin: 0 auto;
-                }
-
-                .container {
-                    display: grid;
-                    grid-template-columns: 70% 30%;
-                    gap: 2rem;
-                    height: 100%;
-                }
-
-                .form-section {
-                    background: #2f3136;
-                    border-radius: 12px;
-                    padding: 2rem;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-                    border: 1px solid #4f545c;
-                }
-
-                .preview-section {
-                    background: #2f3136;
-                    border-radius: 12px;
-                    padding: 2rem;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-                    height: fit-content;
-                    position: sticky;
-                    top: 2rem;
-                    border: 1px solid #4f545c;
-                }
-
-                .section-title {
-                    font-size: 1.5rem;
-                    margin-bottom: 1.5rem;
-                    color: #dcddde;
-                    border-bottom: 2px solid #5865f2;
-                    padding-bottom: 0.5rem;
-                }
-
-                .form-group {
-                    margin-bottom: 1.5rem;
-                }
-
-                .form-group label {
-                    display: block;
-                    margin-bottom: 0.5rem;
-                    font-weight: 600;
-                    color: #dcddde;
-                }
-
-                .form-group input,
-                .form-group select,
-                .form-group textarea {
-                    width: 100%;
-                    padding: 0.75rem;
-                    border: 2px solid #4f545c;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    transition: border-color 0.3s ease;
-                    background: #40444b;
-                    color: #dcddde;
-                }
-
-                .form-group input:focus,
-                .form-group select:focus,
-                .form-group textarea:focus {
-                    outline: none;
-                    border-color: #5865f2;
-                }
-
-                .checkbox-group {
-                    display: flex;
-                    gap: 2rem;
-                    margin-bottom: 1.5rem;
-                }
-
-                .checkbox-group label {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    cursor: pointer;
-                }
-
-                .dynamic-list {
-                    border: 2px solid #4f545c;
-                    border-radius: 8px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                    background: #40444b;
-                }
-
-                .dynamic-item {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr auto;
-                    gap: 0.5rem;
-                    margin-bottom: 0.5rem;
-                    align-items: center;
-                }
-
-                .dynamic-item input {
-                    margin-bottom: 0;
-                }
-
-                .btn {
-                    padding: 0.75rem 1.5rem;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-
-                .btn-primary {
-                    background: #5865f2;
-                    color: white;
-                }
-
-                .btn-primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 8px rgba(88, 101, 242, 0.4);
-                }
-
-                .btn-secondary {
-                    background: #4f545c;
-                    color: #dcddde;
-                }
-
-                .btn-secondary:hover {
-                    background: #5865f2;
-                }
-
-                .btn-add {
-                    background: #3ba55c;
-                    color: white;
-                    padding: 0.5rem 1rem;
-                    font-size: 0.9rem;
-                }
-
-                .btn-add:hover {
-                    background: #2d7a46;
-                }
-
-                .btn-remove {
-                    background: #ed4245;
-                    color: white;
-                    padding: 0.5rem;
-                    font-size: 0.8rem;
-                }
-
-                .btn-remove:hover {
-                    background: #c03538;
-                }
-
-                .command-preview {
-                    background: #1e1e1e;
-                    color: #f8f8f2;
-                    padding: 1rem;
-                    border-radius: 8px;
-                    font-family: 'Courier New', monospace;
-                    font-size: 0.9rem;
-                    line-height: 1.5;
-                    white-space: pre-wrap;
-                    word-break: break-all;
-                    margin-bottom: 1rem;
-                }
-
-                .command-tabs {
-                    display: flex;
-                    gap: 0.5rem;
-                    margin-bottom: 1rem;
-                }
-
-                .tab-btn {
-                    padding: 0.5rem 1rem;
-                    border: 2px solid #5865f2;
-                    background: #4f545c;
-                    color: #dcddde;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-
-                .tab-btn.active {
-                    background: #5865f2;
-                    color: white;
-                }
-
-                .execute-btn {
-                    width: 100%;
-                    background: #3ba55c;
-                    color: white;
-                    padding: 1rem;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 1.1rem;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    margin-top: 1rem;
-                }
-
-                .execute-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 8px rgba(59, 165, 92, 0.4);
-                }
-
-                .execute-btn:disabled {
-                    background: #4f545c;
-                    cursor: not-allowed;
-                    transform: none;
-                }
-
-                @media (max-width: 768px) {
-                    :host {
-                        padding: 1rem;
-                    }
-
-                    .container {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .dynamic-item {
-                        grid-template-columns: 1fr;
-                        gap: 0.5rem;
-                    }
-
-                    .preview-section {
-                        position: static;
-                    }
-                }
-            </style>
-
-            <div class="container">
-                <div class="form-section">
-                    <h2 class="section-title">Configurar Contenedor</h2>
-                    
-                    <div class="form-group">
-                        <label for="image-select">Imagen Docker:</label>
-                        <select id="image-select" required>
-                            <option value="">Cargando imágenes...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="container-name">Nombre del Contenedor:</label>
-                        <input type="text" id="container-name" placeholder="mi-contenedor">
-                    </div>
-
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="detached" checked>
-                            Ejecutar en segundo plano (-d)
-                        </label>
-                        <label>
-                            <input type="checkbox" id="remove">
-                            Eliminar al detener (--rm)
-                        </label>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Puertos:</label>
-                        <div class="dynamic-list" id="ports-list">
-                            ${this.formData.ports.map((port, index) => `
-                                <div class="dynamic-item">
-                                    <input type="number" placeholder="Host (ej: 8080)" 
-                                           data-index="${index}" data-field="host" 
-                                           value="${port.host}" class="port-host">
-                                    <input type="number" placeholder="Contenedor (ej: 80)" 
-                                           data-index="${index}" data-field="container" 
-                                           value="${port.container}" class="port-container">
-                                    <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn btn-add" onclick="this.closest('.form-section').addPort()">+ Agregar Puerto</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Volúmenes:</label>
-                        <div class="dynamic-list" id="volumes-list">
-                            ${this.formData.volumes.map((volume, index) => `
-                                <div class="dynamic-item">
-                                    <input type="text" placeholder="Host (ej: /ruta/local)" 
-                                           data-index="${index}" data-field="host" 
-                                           value="${volume.host}" class="volume-host">
-                                    <input type="text" placeholder="Contenedor (ej: /ruta/contenedor)" 
-                                           data-index="${index}" data-field="container" 
-                                           value="${volume.container}" class="volume-container">
-                                    <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn btn-add" onclick="this.closest('.form-section').addVolume()">+ Agregar Volumen</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Variables de Entorno:</label>
-                        <div class="dynamic-list" id="env-list">
-                            ${this.formData.environment.map((env, index) => `
-                                <div class="dynamic-item">
-                                    <input type="text" placeholder="Clave (ej: NODE_ENV)" 
-                                           data-index="${index}" data-field="key" 
-                                           value="${env.key}" class="env-key">
-                                    <input type="text" placeholder="Valor (ej: production)" 
-                                           data-index="${index}" data-field="value" 
-                                           value="${env.value}" class="env-value">
-                                    <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn btn-add" onclick="this.closest('.form-section').addEnvironment()">+ Agregar Variable</button>
-                    </div>
-                </div>
-
-                <div class="preview-section">
-                    <h3 class="section-title">Vista Previa</h3>
-                    
-                    <div class="command-tabs">
-                        <button class="tab-btn active" data-type="docker">Docker Run</button>
-                        <button class="tab-btn" data-type="compose">Docker Compose</button>
-                    </div>
-
-                    <div class="command-preview" id="command-preview">
-docker run -d --name mi-contenedor
--p 8080:80
--v /ruta/local:/ruta/contenedor
--e NODE_ENV=production
-imagen:tag
-                    </div>
-
-                    <button class="execute-btn" id="execute-btn" disabled>
-                        Ejecutar Comando
-                    </button>
-                </div>
+    initializeDynamicLists() {
+        // Initialize ports list
+        const portsList = this.shadowRoot.getElementById('ports-list');
+        portsList.innerHTML = this.formData.ports.map((port, index) => `
+            <div class="dynamic-item">
+                <input type="number" placeholder="Host (ej: 8080)" 
+                       data-index="${index}" data-field="host" 
+                       value="${port.host}" class="port-host">
+                <input type="number" placeholder="Contenedor (ej: 80)" 
+                       data-index="${index}" data-field="container" 
+                       value="${port.container}" class="port-container">
+                <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
             </div>
-        `;
+        `).join('');
+
+        // Initialize volumes list
+        const volumesList = this.shadowRoot.getElementById('volumes-list');
+        volumesList.innerHTML = this.formData.volumes.map((volume, index) => `
+            <div class="dynamic-item">
+                <input type="text" placeholder="Host (ej: /ruta/local)" 
+                       data-index="${index}" data-field="host" 
+                       value="${volume.host}" class="volume-host">
+                <input type="text" placeholder="Contenedor (ej: /ruta/contenedor)" 
+                       data-index="${index}" data-field="container" 
+                       value="${volume.container}" class="volume-container">
+                <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
+            </div>
+        `).join('');
+
+        // Initialize environment list
+        const envList = this.shadowRoot.getElementById('env-list');
+        envList.innerHTML = this.formData.environment.map((env, index) => `
+            <div class="dynamic-item">
+                <input type="text" placeholder="Clave (ej: NODE_ENV)" 
+                       data-index="${index}" data-field="key" 
+                       value="${env.key}" class="env-key">
+                <input type="text" placeholder="Valor (ej: production)" 
+                       data-index="${index}" data-field="value" 
+                       value="${env.value}" class="env-value">
+                <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>
+            </div>
+        `).join('');
     }
 
     attachEventListeners() {
@@ -442,9 +165,18 @@ imagen:tag
         const tabBtns = this.shadowRoot.querySelectorAll('.tab-btn');
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
+                const tabType = btn.dataset.type;
+                console.log('[Create Single] Tab clicked:', tabType);
+                
+                // Actualizar estado del tab activo
+                this.activeTab = tabType;
+                
+                // Actualizar UI de tabs
                 tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.updatePreview(btn.dataset.type);
+                
+                // Actualizar vista previa según el tab activo
+                this.updatePreview(tabType);
             });
         });
 

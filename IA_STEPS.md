@@ -226,6 +226,88 @@ class NuevaPagina extends BaseComponent {
 }
 ```
 
+### **🏗️ ESTRUCTURA DE CARPETAS RECOMENDADA**
+```
+src/renderer/
+├── components/
+│   └── [nombre-componente]/
+│       ├── [componente].html
+│       └── [componente].js
+├── pages/
+│   └── [nombre-pagina]/
+│       ├── [pagina].html
+│       └── [pagina].js
+├── utils/
+│   └── [utilidades].js
+└── styles/
+    └── [estilos].css
+```
+
+**Principio: Cada componente/página tiene su propia carpeta**
+
+### **🔧 EXPORTACIONES GLOBALES (CRÍTICO)**
+Para que `BaseComponent` esté disponible en el navegador:
+```javascript
+// Al final de ComponentLoader.js
+if (typeof window !== 'undefined') {
+    window.BaseComponent = BaseComponent;
+    window.ComponentLoader = ComponentLoader;
+}
+```
+
+### **✅ ESTADO DE IMPLEMENTACIÓN**
+- **dashboard.js/dashboard.html**: ✅ Separación HTML/JS implementada
+- **create-single.js/create-single.html**: ✅ Separación HTML/JS implementada (17/03/2026)
+- **create-multiple.js/create-multiple.html**: ✅ Separación HTML/JS implementada (17/03/2026)
+- **header/header.html**: ✅ Estructura de carpetas individual creada (17/03/2026)
+- **BaseComponent global**: ✅ Exportaciones globales implementadas (17/03/2026)
+
+### **📋 LECCIONES APRENDIDAS (17/03/2026)**
+
+#### **1. Herencia de Componentes**
+- **SIEMPRE** extender `BaseComponent`, no `HTMLElement`
+- **NUNCA** duplicar `this.attachShadow({ mode: 'open' })` en clases hijas
+- **VERIFICAR** que `BaseComponent` esté disponible globalmente
+
+#### **2. Orden de Carga Crítico**
+En `index.html` el orden debe ser:
+```html
+<!-- 1. Utils primero -->
+<script src="utils/ComponentLoader.js"></script>
+
+<!-- 2. Componentes después -->
+<script src="components/header.js"></script>
+
+<!-- 3. Pages al final -->
+<script src="pages/dashboard.js"></script>
+<script src="pages/create-single.js"></script>
+<script src="pages/create-multiple.js"></script>
+
+<!-- 4. Router último -->
+<script src="router.js"></script>
+```
+
+#### **3. Patrones de Inicialización**
+```javascript
+connectedCallback() {
+    this.render('./pages/componente.html').then(() => {
+        this.initializeDynamicContent();  // Para contenido dinámico
+        this.loadData();                  // Para cargar datos externos
+        this.attachEventListeners();       // Para eventos del DOM
+    });
+}
+```
+
+#### **4. Manejo de Contenido Dinámico**
+- **Crear métodos separados** para inicializar contenido dinámico
+- **Ejemplo**: `initializeDynamicLists()`, `initializeServices()`
+- **LLAMAR** después del render pero antes de eventos
+
+#### **5. Validación y Debugging**
+- **SIEMPRE** verificar que `BaseComponent` exista antes de usarlo
+- **USAR** `console.log` para debugging de carga de componentes
+- **MANEJAR** errores de carga con try-catch en render()
+
 ### **Al Modificar Estilos**
 1. **CSS Variables**: Priorizar variables globales
 2. **Component Scoped**: Mantener en Shadow DOM

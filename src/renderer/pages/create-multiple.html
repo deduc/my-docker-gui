@@ -1,0 +1,347 @@
+<style>
+    :host {
+        display: block;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: 70% 30%;
+        gap: 2rem;
+        height: 100%;
+    }
+
+    .form-section {
+        background: #2f3136;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        border: 1px solid #4f545c;
+    }
+
+    .preview-section {
+        background: #2f3136;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+        border: 1px solid #4f545c;
+    }
+
+    .preview-container {
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-header h4 {
+        margin: 0;
+        color: #dcddde;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #dcddde;
+        border-bottom: 2px solid #5865f2;
+        padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #dcddde;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #4f545c;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        background: #40444b;
+        color: #dcddde;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #5865f2;
+    }
+
+    .dynamic-list {
+        border: 1px solid #4f545c;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: #2f3136;
+    }
+
+    .dynamic-item {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+
+    .dynamic-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .dynamic-item input {
+        margin-bottom: 0;
+    }
+
+    .depends-on-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .dependency-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #5865f2;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(88, 101, 242, 0.4);
+    }
+
+    .btn-success {
+        background: #3ba55c;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #2d7a46;
+    }
+
+    .btn-danger {
+        background: #ed4245;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-danger:hover {
+        background: #c03538;
+    }
+
+    .btn-secondary {
+        background: #4f545c;
+        color: #dcddde;
+    }
+
+    .btn-secondary:hover {
+        background: #5865f2;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .command-preview {
+        background: #1e1e1e;
+        color: #f8f8f2;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-break: break-all;
+        margin-bottom: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .command-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #5865f2;
+        background: #4f545c;
+        color: #dcddde;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+        background: #5865f2;
+        color: white;
+    }
+
+    .execute-btn {
+        width: 100%;
+        background: #3ba55c;
+        color: white;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .execute-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(59, 165, 92, 0.4);
+    }
+
+    .execute-btn:disabled {
+        background: #4f545c;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .add-service-btn {
+        width: 100%;
+        background: #5865f2;
+        color: white;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .add-service-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(88, 101, 242, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        :host {
+            padding: 1rem;
+        }
+
+        .container {
+            grid-template-columns: 1fr;
+        }
+
+        .dynamic-item {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .preview-section {
+            position: static;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="form-section">
+        <h2 class="section-title">Configurar Múltiples Contenedores</h2>
+        
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="detached" checked>
+                Ejecutar en segundo plano (-d)
+            </label>
+            <label>
+                <input type="checkbox" id="remove">
+                Eliminar al detener (--rm)
+            </label>
+        </div>
+        
+        <button class="add-service-btn" onclick="window.createMultiplePage.addService()">
+            + Agregar Servicio
+        </button>
+
+        <div id="services-container">
+            <!-- Dynamic services will be added here -->
+        </div>
+    </div>
+
+    <div class="preview-section">
+        <h3 class="section-title">Vista Previa</h3>
+        
+        <!-- Vista previa de Docker Run -->
+        <div class="preview-container">
+            <div class="preview-header">
+                <h4>Comando Docker Run</h4>
+            </div>
+            <div class="command-preview" id="command-preview-docker">
+docker run -d --name servicio1
+-p 8080:80
+-v /ruta/local:/ruta/contenedor
+-e NODE_ENV=production
+imagen:tag
+            </div>
+            <button class="execute-btn" id="execute-docker-btn">
+                Ejecutar Comando Docker
+            </button>
+        </div>
+
+        <!-- Vista previa de Docker Compose -->
+        <div class="preview-container" style="margin-top: 2rem;">
+            <div class="preview-header">
+                <h4>Docker Compose</h4>
+                <div class="command-tabs">
+                    <button class="tab-btn" data-type="docker">Docker Run</button>
+                    <button class="tab-btn active" data-type="compose">Docker Compose</button>
+                </div>
+            </div>
+            <div class="command-preview" id="command-preview-compose">
+version: '3.8'
+services:
+  servicio1:
+    image: imagen:tag
+    container_name: servicio1
+            </div>
+            <button class="execute-btn" id="execute-compose-btn">
+                Generar y Ejecutar Docker Compose
+            </button>
+        </div>
+    </div>
+</div>
