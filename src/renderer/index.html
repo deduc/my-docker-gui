@@ -3,573 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
-    <title>My Docker GUI</title>
-    <script>
-        // Redirigir automáticamente al home/dashboard
-        window.location.href = 'pages/home/index.html';
-    </script>
+    <title>MyDocker GUI</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #36393f;
+            min-height: 100vh;
+            color: #dcddde;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+        }
+
+        main {
+            flex: 1;
+            padding: 0;
+            background: transparent;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        #main-content {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Global styles for loading and error states */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem;
+            text-align: center;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        /* Animation classes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Responsive utilities */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif; background: #1a1a1a; color: #ffffff;">
-        <div style="text-align: center;">
-            <h1 style="color: #3498db;">🐳 My Docker GUI</h1>
-            <p style="color: #bdc3c7;">Redirigiendo al dashboard...</p>
-        </div>
-    </div>
-</body>
-</html>
-
-                    <div class="form-group">
-                        <label for="containerName">Nombre del Contenedor:</label>
-                        <input type="text" id="containerName" name="containerName" placeholder="ej: mi-nginx, mi-base-de-datos">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="version">Versión (opcional):</label>
-                        <input type="text" id="version" name="version" placeholder="ej: latest, 20.04, 8.0">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Puertos Expuestos:</label>
-                        <div id="portMappings">
-                            <div class="port-mapping">
-                                <input type="number" placeholder="Puerto host" class="host-port">
-                                <span>:</span>
-                                <input type="number" placeholder="Puerto contenedor" class="container-port">
-                                <button type="button" class="btn remove-port-btn" onclick="removePortMapping(this)">Eliminar</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn add-port-btn" onclick="addPortMapping()">+ Añadir Puerto</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="volumes">Volúmenes (opcional):</label>
-                        <textarea id="volumes" name="volumes" rows="3" placeholder="ej: /ruta/local:/ruta/contenedor&#10;/otra/ruta:/ruta/en/contenedor"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="environment">Variables de Entorno (opcional):</label>
-                        <textarea id="environment" name="environment" rows="3" placeholder="ej: MYSQL_ROOT_PASSWORD=mipassword&#10;DATABASE_NAME=midb"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="command">Comando a ejecutar (opcional):</label>
-                        <input type="text" id="command" name="command" placeholder="ej: nginx -g 'daemon off;'">
-                    </div>
-                </div>
-
-                <div class="config-section" id="multiContainerSection" style="display: none;">
-                    <h2>Configuración de Red</h2>
-                    
-                    <div class="form-group">
-                        <label for="networkName">Nombre de la Red:</label>
-                        <input type="text" id="networkName" name="networkName" placeholder="ej: mi-red">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="networkDriver">Driver de Red:</label>
-                        <select id="networkDriver" name="networkDriver">
-                            <option value="bridge">Bridge</option>
-                            <option value="host">Host</option>
-                            <option value="overlay">Overlay</option>
-                            <option value="none">None</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="config-section">
-                    <button type="submit" class="btn">Generar Configuración</button>
-                    <button type="button" class="btn btn-secondary" onclick="clearForm()">Limpiar Formulario</button>
-                    <button type="button" class="btn btn-primary" onclick="executeDockerCommand()">Ejecutar Comando</button>
-                </div>
-            </form>
-
-            <div class="output-section hidden" id="outputSection">
-                <h3>Configuración Generada:</h3>
-                <div class="output-content" id="outputContent"></div>
-                <div class="output-actions">
-                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copiar al Portapapeles</button>
-                    <button class="execute-btn" onclick="executeGeneratedCommand()">▶️ Ejecutar Comando</button>
-                </div>
-            </div>
-
-            <div class="containers-section">
-                <h2>Contenedores Activos</h2>
-                <button class="btn refresh-btn" onclick="refreshContainers()">🔄 Actualizar</button>
-                <div id="containersList" class="containers-grid"></div>
-            </div>
-
-            <div class="images-section">
-                <h2>Imágenes Disponibles</h2>
-                <button class="btn refresh-btn" onclick="refreshImages()">🔄 Actualizar</button>
-                <div id="imagesList" class="images-grid"></div>
+    <div class="app-container">
+        <app-header></app-header>
+        <main>
+            <div id="main-content">
+                <!-- Content will be loaded here by router -->
             </div>
         </main>
     </div>
 
-    <script>
-        // Variables globales
-        let dockerAvailable = false;
-        let generatedCommand = '';
-
-        // Inicialización cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            checkDockerStatus();
-            loadDockerInfo();
-            refreshContainers();
-            refreshImages();
-        });
-
-        // Verificar estado de Docker
-        async function checkDockerStatus() {
-            const statusText = document.getElementById('statusText');
-            const dockerVersion = document.getElementById('dockerVersion');
-            
-            try {
-                if (!window.electronAPI) {
-                    statusText.textContent = 'Modo web - Sin conexión Docker';
-                    statusText.className = 'status-web';
-                    return;
-                }
-
-                console.log('Verificando Docker...');
-                const versionResult = await window.electronAPI.docker.getVersion();
-                console.log('Resultado versión:', versionResult);
-                
-                if (versionResult.success) {
-                    dockerAvailable = true;
-                    statusText.textContent = '✅ Docker disponible';
-                    statusText.className = 'status-online';
-                    dockerVersion.textContent = versionResult.stdout;
-                    dockerVersion.className = 'version-info visible';
-                    console.log('Docker está disponible');
-                } else {
-                    console.log('Error en versión:', versionResult.stderr);
-                    throw new Error(versionResult.stderr || 'No se pudo obtener versión');
-                }
-            } catch (error) {
-                console.error('Error verificando Docker:', error);
-                dockerAvailable = false;
-                statusText.textContent = '❌ Docker no disponible';
-                statusText.className = 'status-offline';
-                dockerVersion.className = 'version-info';
-                
-                // Mostrar información adicional sobre el error
-                if (error.message.includes('not recognized') || error.message.includes('command not found')) {
-                    console.log('Docker no está instalado o no está en el PATH');
-                } else if (error.message.includes('permission denied')) {
-                    console.log('Problema de permisos con Docker');
-                } else {
-                    console.log('Error general de Docker:', error.message);
-                }
-            }
-        }
-
-        // Cargar información de Docker
-        async function loadDockerInfo() {
-            if (!dockerAvailable) return;
-            
-            const infoContent = document.getElementById('dockerInfoContent');
-            
-            try {
-                const infoResult = await window.electronAPI.docker.getInfo();
-                if (infoResult.success) {
-                    // Parsear información relevante
-                    const lines = infoResult.stdout.split('\n');
-                    const relevantInfo = lines.filter(line => 
-                        line.includes('Containers:') || 
-                        line.includes('Running') || 
-                        line.includes('Images:') ||
-                        line.includes('Server Version:') ||
-                        line.includes('CPU:') ||
-                        line.includes('Total Memory:')
-                    );
-                    
-                    infoContent.innerHTML = relevantInfo.map(info => 
-                        `<div class="info-item">${info}</div>`
-                    ).join('');
-                }
-            } catch (error) {
-                infoContent.innerHTML = `<div class="error">No se puede cargar información de Docker</div>`;
-            }
-        }
-
-        // Refrescar lista de contenedores
-        async function refreshContainers() {
-            const containersList = document.getElementById('containersList');
-            
-            if (!dockerAvailable) {
-                containersList.innerHTML = '<div class="error">Docker no disponible</div>';
-                return;
-            }
-
-            try {
-                const result = await window.electronAPI.docker.getRunningContainers();
-                if (result.success) {
-                    const containers = parseTableOutput(result.stdout);
-                    containersList.innerHTML = containers.map(container => `
-                        <div class="container-card">
-                            <h4>${container.Names}</h4>
-                            <p><strong>Imagen:</strong> ${container.Image}</p>
-                            <p><strong>Estado:</strong> ${container.Status}</p>
-                            <p><strong>Puertos:</strong> ${container.Ports || 'N/A'}</p>
-                            <div class="container-actions">
-                                <button class="btn btn-small" onclick="stopContainer('${container.ID}')">Detener</button>
-                                <button class="btn btn-small btn-danger" onclick="removeContainer('${container.ID}')">Eliminar</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    containersList.innerHTML = '<div class="error">No se pueden cargar contenedores</div>';
-                }
-            } catch (error) {
-                containersList.innerHTML = '<div class="error">Error al cargar contenedores</div>';
-            }
-        }
-
-        // Refrescar lista de imágenes
-        async function refreshImages() {
-            const imagesList = document.getElementById('imagesList');
-            
-            if (!dockerAvailable) {
-                imagesList.innerHTML = '<div class="error">Docker no disponible</div>';
-                return;
-            }
-
-            try {
-                const result = await window.electronAPI.docker.getImages();
-                if (result.success) {
-                    const images = parseTableOutput(result.stdout);
-                    imagesList.innerHTML = images.map(image => `
-                        <div class="image-card">
-                            <h4>${image.Repository}:${image.Tag}</h4>
-                            <p><strong>ID:</strong> ${image.ID}</p>
-                            <p><strong>Tamaño:</strong> ${image.Size}</p>
-                            <p><strong>Creado:</strong> ${image.CreatedAt}</p>
-                        </div>
-                    `).join('');
-                } else {
-                    imagesList.innerHTML = '<div class="error">No se pueden cargar imágenes</div>';
-                }
-            } catch (error) {
-                imagesList.innerHTML = '<div class="error">Error al cargar imágenes</div>';
-            }
-        }
-
-        // Parsear salida de tabla de Docker
-        function parseTableOutput(output) {
-            const lines = output.trim().split('\n');
-            if (lines.length <= 1) return [];
-            
-            const headers = lines[0].split(/\s+/);
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(/\s+/);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                data.push(row);
-            }
-            
-            return data;
-        }
-
-        // Detener contenedor
-        async function stopContainer(containerId) {
-            try {
-                const result = await window.electronAPI.docker.stopContainer(containerId);
-                if (result.success) {
-                    alert('Contenedor detenido exitosamente');
-                    refreshContainers();
-                } else {
-                    alert('Error al detener contenedor: ' + result.stderr);
-                }
-            } catch (error) {
-                alert('Error al detener contenedor: ' + error.message);
-            }
-        }
-
-        // Eliminar contenedor
-        async function removeContainer(containerId) {
-            if (!confirm('¿Estás seguro de que quieres eliminar este contenedor?')) return;
-            
-            try {
-                const result = await window.electronAPI.docker.removeContainer(containerId);
-                if (result.success) {
-                    alert('Contenedor eliminado exitosamente');
-                    refreshContainers();
-                } else {
-                    alert('Error al eliminar contenedor: ' + result.stderr);
-                }
-            } catch (error) {
-                alert('Error al eliminar contenedor: ' + error.message);
-            }
-        }
-
-        // Cambiar visibilidad de secciones según el tipo de configuración
-        document.querySelectorAll('input[name="configType"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const multiSection = document.getElementById('multiContainerSection');
-                if (this.value === 'multi' || this.value === 'compose') {
-                    multiSection.style.display = 'block';
-                } else {
-                    multiSection.style.display = 'none';
-                }
-            });
-        });
-
-        // Añadir mapeo de puertos
-        function addPortMapping() {
-            const portMappings = document.getElementById('portMappings');
-            const newMapping = document.createElement('div');
-            newMapping.className = 'port-mapping';
-            newMapping.innerHTML = `
-                <input type="number" placeholder="Puerto host" class="host-port">
-                <span>:</span>
-                <input type="number" placeholder="Puerto contenedor" class="container-port">
-                <button type="button" class="btn remove-port-btn" onclick="removePortMapping(this)">Eliminar</button>
-            `;
-            portMappings.appendChild(newMapping);
-        }
-
-        // Eliminar mapeo de puertos
-        function removePortMapping(button) {
-            const portMappings = document.getElementById('portMappings');
-            if (portMappings.children.length > 1) {
-                button.parentElement.remove();
-            }
-        }
-
-        // Generar configuración
-        document.getElementById('dockerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            generateConfiguration();
-        });
-
-        function generateConfiguration() {
-            const configType = document.querySelector('input[name="configType"]:checked').value;
-            const imageName = document.getElementById('imageName').value;
-            const containerName = document.getElementById('containerName').value;
-            const version = document.getElementById('version').value;
-            const command = document.getElementById('command').value;
-            const volumes = document.getElementById('volumes').value;
-            const environment = document.getElementById('environment').value;
-            
-            // Obtener puertos
-            const portMappings = document.querySelectorAll('.port-mapping');
-            const ports = [];
-            portMappings.forEach(mapping => {
-                const hostPort = mapping.querySelector('.host-port').value;
-                const containerPort = mapping.querySelector('.container-port').value;
-                if (hostPort && containerPort) {
-                    ports.push(`${hostPort}:${containerPort}`);
-                }
-            });
-
-            let output = '';
-
-            if (configType === 'single') {
-                output = generateDockerCommand(imageName, containerName, version, ports, volumes, environment, command);
-            } else if (configType === 'multi') {
-                output = generateMultiContainerCommands(imageName, containerName, version, ports, volumes, environment, command);
-            } else if (configType === 'compose') {
-                output = generateDockerCompose(imageName, containerName, version, ports, volumes, environment, command);
-            }
-
-            generatedCommand = output;
-            document.getElementById('outputContent').textContent = output;
-            document.getElementById('outputSection').classList.remove('hidden');
-        }
-
-        function generateDockerCommand(imageName, containerName, version, ports, volumes, environment, command) {
-            let cmd = 'docker run -d';
-            
-            if (containerName) {
-                cmd += ` --name ${containerName}`;
-            }
-            
-            ports.forEach(port => {
-                cmd += ` -p ${port}`;
-            });
-            
-            if (volumes) {
-                const volumeLines = volumes.trim().split('\n');
-                volumeLines.forEach(volume => {
-                    if (volume.trim()) {
-                        cmd += ` -v ${volume.trim()}`;
-                    }
-                });
-            }
-            
-            if (environment) {
-                const envLines = environment.trim().split('\n');
-                envLines.forEach(env => {
-                    if (env.trim()) {
-                        cmd += ` -e ${env.trim()}`;
-                    }
-                });
-            }
-            
-            const fullImageName = version ? `${imageName}:${version}` : imageName;
-            cmd += ` ${fullImageName}`;
-            
-            if (command) {
-                cmd += ` ${command}`;
-            }
-            
-            return cmd;
-        }
-
-        function generateMultiContainerCommands(imageName, containerName, version, ports, volumes, environment, command) {
-            const networkName = document.getElementById('networkName').value || 'mi-red';
-            const networkDriver = document.getElementById('networkDriver').value;
-            
-            let commands = `# Crear red de contenedores\n`;
-            commands += `docker network create --driver ${networkDriver} ${networkName}\n\n`;
-            
-            commands += `# Crear contenedor\n`;
-            commands += generateDockerCommand(imageName, containerName, version, ports, volumes, environment, command);
-            commands += ` --network ${networkName}\n\n`;
-            
-            commands += `# Comandos adicionales para conectar otros contenedores a la red:\n`;
-            commands += `# docker run -d --name otro-contenedor --network ${networkName} otra-imagen\n`;
-            
-            return commands;
-        }
-
-        function generateDockerCompose(imageName, containerName, version, ports, volumes, environment, command) {
-            const networkName = document.getElementById('networkName').value || 'mi-red';
-            const networkDriver = document.getElementById('networkDriver').value;
-            
-            let yaml = `version: '3.8'\n\n`;
-            yaml += `services:\n`;
-            yaml += `  ${containerName || 'servicio'}:\n`;
-            yaml += `    image: ${version ? `${imageName}:${version}` : imageName}\n`;
-            yaml += `    container_name: ${containerName || 'contenedor'}\n`;
-            
-            if (ports.length > 0) {
-                yaml += `    ports:\n`;
-                ports.forEach(port => {
-                    yaml += `      - "${port}"\n`;
-                });
-            }
-            
-            if (volumes) {
-                yaml += `    volumes:\n`;
-                const volumeLines = volumes.trim().split('\n');
-                volumeLines.forEach(volume => {
-                    if (volume.trim()) {
-                        yaml += `      - ${volume.trim()}\n`;
-                    }
-                });
-            }
-            
-            if (environment) {
-                yaml += `    environment:\n`;
-                const envLines = environment.trim().split('\n');
-                envLines.forEach(env => {
-                    if (env.trim()) {
-                        const [key, value] = env.trim().split('=');
-                        yaml += `      - ${key}=${value}\n`;
-                    }
-                });
-            }
-            
-            if (command) {
-                yaml += `    command: ${command}\n`;
-            }
-            
-            yaml += `    restart: unless-stopped\n\n`;
-            
-            yaml += `networks:\n`;
-            yaml += `  ${networkName}:\n`;
-            yaml += `    driver: ${networkDriver}\n`;
-            
-            return yaml;
-        }
-
-        // Ejecutar comando generado
-        async function executeGeneratedCommand() {
-            if (!generatedCommand) {
-                alert('No hay comando generado para ejecutar');
-                return;
-            }
-
-            if (!dockerAvailable) {
-                alert('Docker no está disponible');
-                return;
-            }
-
-            try {
-                const result = await window.electronAPI.docker.executeCommand(generatedCommand);
-                if (result.success) {
-                    alert('Comando ejecutado exitosamente');
-                    refreshContainers();
-                } else {
-                    alert('Error al ejecutar comando: ' + result.stderr);
-                }
-            } catch (error) {
-                alert('Error al ejecutar comando: ' + error.message);
-            }
-        }
-
-        // Ejecutar comando Docker directamente
-        async function executeDockerCommand() {
-            const command = prompt('Introduce el comando Docker a ejecutar:');
-            if (!command) return;
-
-            if (!dockerAvailable) {
-                alert('Docker no está disponible');
-                return;
-            }
-
-            try {
-                const result = await window.electronAPI.docker.executeCommand(command);
-                if (result.success) {
-                    alert('Comando ejecutado exitosamente:\n\n' + result.stdout);
-                    refreshContainers();
-                } else {
-                    alert('Error al ejecutar comando: ' + result.stderr);
-                }
-            } catch (error) {
-                alert('Error al ejecutar comando: ' + error.message);
-            }
-        }
-
-        function copyToClipboard() {
-            const outputContent = document.getElementById('outputContent').textContent;
-            navigator.clipboard.writeText(outputContent).then(function() {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ ¡Copiado!';
-                btn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
-                
-                setTimeout(function() {
-                    btn.textContent = originalText;
-                    btn.style.background = '';
-                }, 2000);
-            });
-        }
-
-        function clearForm() {
-            document.getElementById('dockerForm').reset();
-            document.getElementById('outputSection').classList.add('hidden');
-            generatedCommand = '';
-            
-            // Resetear puertos a solo uno
-            const portMappings = document.getElementById('portMappings');
-            portMappings.innerHTML = `
-                <div class="port-mapping">
-                    <input type="number" placeholder="Puerto host" class="host-port">
-                    <span>:</span>
-                    <input type="number" placeholder="Puerto contenedor" class="container-port">
-                    <button type="button" class="btn remove-port-btn" onclick="removePortMapping(this)">Eliminar</button>
-                </div>
-            `;
-        }
-    </script>
+    <!-- Components -->
+    <script src="components/header.js"></script>
+    
+    <!-- Pages -->
+    <script src="pages/dashboard.js"></script>
+    <script src="pages/create-single.js"></script>
+    <script src="pages/create-multiple.js"></script>
+    
+    <!-- Router -->
+    <script src="router.js"></script>
 </body>
 </html>

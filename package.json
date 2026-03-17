@@ -6,24 +6,20 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "fullscreen": "electron . --fullscreen",
-    "maximized": "electron . --maximized",
-    "production": "electron . --production",
-    "build": "electron-builder",
-    "build-win": "electron-builder --win",
-    "build-linux": "electron-builder --linux",
-    "dist": "npm run build"
+    "build": "electron-builder"
   },
-  "keywords": ["docker", "gui", "electron", "desktop"],
-  "author": "Your Name",
+  "keywords": ["docker", "electron", "gui", "desktop"],
+  "author": "MyDocker GUI Team",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-pty": "^1.0.0"
+  },
   "build": {
-    "appId": "com.yourcompany.mydocker-gui",
+    "appId": "com.mydocker.gui",
     "productName": "MyDocker GUI",
     "directories": {
       "output": "dist"
@@ -31,18 +27,6 @@
     "files": [
       "src/**/*",
       "node_modules/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
-    },
-    "linux": {
-      "target": "AppImage",
-      "icon": "assets/icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+    ]
   }
 }

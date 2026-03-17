@@ -1,91 +1,166 @@
-// Header Component
-class HeaderComponent extends HTMLElement {
-    connectedCallback() {
-        this.innerHTML = `
-            <header class="header">
-                <div class="header-content">
-                    <h1>🐳 My Docker GUI</h1>
-                    <p>Interfaz gráfica para gestionar Docker sin necesidad de memorizar comandos</p>
-                </div>
-                <div class="docker-status">
-                    <div id="statusIndicator" class="status-indicator status-offline">
-                        <span id="statusIcon">❌</span>
-                        <span id="statusText">Verificando Docker...</span>
-                    </div>
-                    <div id="dockerVersion" class="version-info"></div>
-                </div>
-            </header>
-        `;
-        
-        // Inicializar verificación de Docker
-        this.checkDockerStatus();
+class Header extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
     }
-    
-    async checkDockerStatus() {
-        const statusIndicator = document.getElementById('statusIndicator');
-        const statusIcon = document.getElementById('statusIcon');
-        const statusText = document.getElementById('statusText');
-        const dockerVersion = document.getElementById('dockerVersion');
-        
-        try {
-            if (!window.electronAPI) {
-                statusText.textContent = 'Modo web';
-                statusIndicator.className = 'status-indicator status-web';
-                statusIcon.textContent = '🌐';
-                return;
-            }
 
-            console.log('Verificando Docker...');
-            const versionResult = await window.electronAPI.docker.getVersion();
-            console.log('Resultado versión:', versionResult);
-            
-            if (versionResult.success) {
-                statusText.textContent = 'Docker disponible';
-                statusIndicator.className = 'status-indicator status-online';
-                statusIcon.textContent = '✅';
-                dockerVersion.textContent = versionResult.stdout;
-                dockerVersion.style.display = 'block';
-                console.log('Docker está disponible');
-                
-                // Disparar evento de que Docker está disponible
-                window.dispatchEvent(new CustomEvent('dockerAvailable', { 
-                    detail: { version: versionResult.stdout } 
-                }));
-            } else {
-                console.log('Error en versión:', versionResult.stderr);
-                throw new Error(versionResult.stderr || 'No se pudo obtener versión');
-            }
-        } catch (error) {
-            console.error('Error verificando Docker:', error);
-            statusText.textContent = 'Docker no disponible';
-            statusIndicator.className = 'status-indicator status-offline';
-            statusIcon.textContent = '❌';
-            dockerVersion.style.display = 'none';
-            
-            // Mostrar información adicional sobre el error
-            if (error.message.includes('not recognized') || error.message.includes('command not found')) {
-                console.log('Docker no está instalado o no está en el PATH');
-            } else if (error.message.includes('permission denied')) {
-                console.log('Problema de permisos con Docker');
-            } else {
-                console.log('Error general de Docker:', error.message);
-            }
-            
-            // Disparar evento de que Docker no está disponible
-            window.dispatchEvent(new CustomEvent('dockerUnavailable', { 
-                detail: { error: error.message } 
-            }));
-        }
+    connectedCallback() {
+        this.render();
+    }
+
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>
+                :host {
+                    display: block;
+                    width: 100%;
+                }
+
+                .header {
+                    background: #2f3136;
+                    color: #dcddde;
+                    padding: 2rem;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                    border-bottom: 1px solid #202225;
+                }
+
+                .header-content {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 2rem;
+                    align-items: center;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }
+
+                .header-title {
+                    text-align: left;
+                }
+
+                .header-nav {
+                    text-align: right;
+                }
+
+                .header h1 {
+                    margin: 0;
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    margin-bottom: 0.5rem;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+                .header .subtitle {
+                    font-size: 1.1rem;
+                    opacity: 0.9;
+                    margin: 0;
+                    font-weight: 300;
+                }
+
+                .nav-buttons {
+                    display: flex;
+                    gap: 1rem;
+                    justify-content: flex-end;
+                    flex-wrap: wrap;
+                }
+
+                .nav-btn {
+                    background: #4f545c;
+                    color: #dcddde;
+                    border: 2px solid #4f545c;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    transition: all 0.3s ease;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+
+                .nav-btn:hover {
+                    background: #5865f2;
+                    border-color: #5865f2;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(88, 101, 242, 0.3);
+                }
+
+                .nav-btn.active {
+                    background: #5865f2;
+                    border-color: #5865f2;
+                }
+
+                @media (max-width: 768px) {
+                    .header {
+                        padding: 1.5rem;
+                    }
+
+                    .header h1 {
+                        font-size: 2rem;
+                    }
+
+                    .header .subtitle {
+                        font-size: 1rem;
+                    }
+
+                    .nav-buttons {
+                        gap: 0.5rem;
+                    }
+
+                    .nav-btn {
+                        padding: 0.6rem 1.2rem;
+                        font-size: 0.9rem;
+                    }
+                }
+            </style>
+
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1>MyDocker GUI</h1>
+                        <p class="subtitle">Interfaz gráfica para gestionar Docker sin necesidad de memorizar comandos</p>
+                    </div>
+                    
+                    <div class="header-nav">
+                        <div class="nav-buttons">
+                            <a href="#dashboard" class="nav-btn" data-page="dashboard">Dashboard</a>
+                            <a href="#create-single" class="nav-btn" data-page="create-single">Crear Contenedor</a>
+                            <a href="#create-multiple" class="nav-btn" data-page="create-multiple">Múltiples Contenedores</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.attachEventListeners();
+    }
+
+    attachEventListeners() {
+        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = btn.dataset.page;
+                this.navigate(page);
+            });
+        });
+    }
+
+    navigate(page) {
+        // Update active state
+        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        navButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.page === page);
+        });
+
+        // Navigate to page
+        window.appRouter?.navigate(page);
+    }
+
+    setActivePage(page) {
+        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
+        navButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.page === page);
+        });
     }
 }
 
-// Registrar el componente
-customElements.define('header-component', HeaderComponent);
-
-// Función global para verificar Docker desde otros componentes
-window.refreshDockerStatus = function() {
-    const header = document.querySelector('header-component');
-    if (header) {
-        header.checkDockerStatus();
-    }
-};
+customElements.define('app-header', Header);
