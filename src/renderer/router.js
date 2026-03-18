@@ -3,7 +3,7 @@ class AppRouter {
         this.currentPage = 'dashboard';
         this.routes = {
             'dashboard': 'dashboard-page',
-            'create-single': 'create-single-page',
+            'create-single': 'create-container-page',
             'create-multiple': 'create-multiple-page'
         };
     }

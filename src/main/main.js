@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const dockerService = require('./docker-service');
+const DockerService = require('./docker-service');
+const dockerService = new DockerService();
 
 // Hot reload para desarrollo
 if (process.argv.includes('--dev')) {
@@ -158,6 +159,39 @@ ipcMain.handle('get-volumes', async () => {
         const volumes = await dockerService.getVolumes();
         return { success: true, data: volumes };
     } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('remove-volume', async (event, volumeName) => {
+    try {
+        console.log(`[Main] Removing volume: ${volumeName}`);
+        const result = await dockerService.removeVolume(volumeName);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('[Main] Error removing volume:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('save-command-history', async (event, entry) => {
+    try {
+        console.log('[Main] Saving command history entry:', entry);
+        const result = await dockerService.saveCommandHistory(entry);
+        return { success: true, filePath: result };
+    } catch (error) {
+        console.error('[Main] Error saving command history:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get-command-history', async (event) => {
+    try {
+        console.log('[Main] Getting command history');
+        const result = await dockerService.getCommandHistory();
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('[Main] Error getting command history:', error);
         return { success: false, error: error.message };
     }
 });

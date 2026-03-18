@@ -4,7 +4,7 @@ class DashboardPage extends BaseComponent {
     }
 
     connectedCallback() {
-        this.render('./pages/dashboard.html').then(() => {
+        this.render('./pages/dashboard/dashboard.html').then(() => {
             this.attachEventListeners();
             this.loadData();
             window.dashboardPage = this;
@@ -30,12 +30,39 @@ class DashboardPage extends BaseComponent {
             }
 
             const containers = result.data;
-            containersList.innerHTML = containers.map(container => `
+            
+            // Convertir datos planos a objetos con métodos si es necesario
+            const processedContainers = containers.map(container => {
+                if (container.getStatusInfo) {
+                    return container; // Ya tiene los métodos
+                } else {
+                    // Crear objeto con métodos necesarios
+                    return {
+                        id: container.id,
+                        image: container.image,
+                        status: container.status,
+                        ports: container.ports,
+                        names: container.names,
+                        isRunning: function() {
+                            return this.status.includes('Up');
+                        },
+                        isStopped: function() {
+                            return !this.isRunning();
+                        },
+                        getStatusInfo: function() {
+                            const portInfo = this.ports || 'Sin puertos';
+                            return `${this.image} | ${portInfo} | ${this.status || 'Desconocido'}`;
+                        }
+                    };
+                }
+            });
+            
+            containersList.innerHTML = processedContainers.map(container => `
                 <div class="item" data-container-id="${container.id}">
                     <div class="item-info">
                         <div class="item-name">${container.names}</div>
                         <div class="item-details">
-                            ${container.image} | ${container.ports || 'Sin puertos'} | ${container.status || 'Desconocido'}
+                            ${container.getStatusInfo()}
                         </div>
                     </div>
                     <div class="item-controls">
@@ -67,15 +94,38 @@ class DashboardPage extends BaseComponent {
             const images = result.data.slice(0, 5);
             console.log('[Dashboard] Processing images:', images);
             
-            imagesList.innerHTML = images.map(image => `
+            // Convertir datos planos a objetos con métodos si es necesario
+            const processedImages = images.map(image => {
+                if (image.getDisplayInfo) {
+                    return image; // Ya tiene los métodos
+                } else {
+                    // Crear objeto con métodos necesarios
+                    return {
+                        repository: image.repository,
+                        tag: image.tag,
+                        id: image.id,
+                        diskUsage: image.diskUsage || image.createdAt,
+                        contentSize: image.contentSize || image.size,
+                        fullName: `${image.repository}:${image.tag}`,
+                        getShortId: function(length = 12) {
+                            return this.id ? this.id.substring(0, length) : 'N/A';
+                        },
+                        getDisplayInfo: function() {
+                            return `ID: ${this.getShortId()} | ${this.diskUsage} | ${this.contentSize}`;
+                        }
+                    };
+                }
+            });
+            
+            imagesList.innerHTML = processedImages.map(image => `
                 <div class="item">
                     <div class="item-info">
-                        <div class="item-name">${image.repository}:${image.tag}</div>
+                        <div class="item-name">${image.fullName}</div>
                         <div class="item-details">
-                            ID: ${image.id ? image.id.substring(0, 12) : 'N/A'} | ${image.size || 'N/A'} | ${image.createdAt || 'N/A'}
+                            ${image.getDisplayInfo()}
                         </div>
                     </div>
-                    <button class="delete-btn" onclick="dashboardPage.deleteImage('${image.repository}:${image.tag}')" title="Borrar imagen">
+                    <button class="delete-btn" onclick="dashboardPage.deleteImage('${image.fullName}')" title="Borrar imagen">
                         <span class="delete-icon">🗑️</span>
                         Borrar
                     </button>
@@ -106,14 +156,43 @@ class DashboardPage extends BaseComponent {
             const volumes = result.data.slice(0, 5);
             console.log('[Dashboard] Processing volumes:', volumes);
             
-            volumesList.innerHTML = volumes.map(volume => `
+            // Convertir datos planos a objetos con métodos si es necesario
+            const processedVolumes = volumes.map(volume => {
+                if (volume.getDisplayInfo) {
+                    return volume; // Ya tiene los métodos
+                } else {
+                    // Crear objeto con métodos necesarios
+                    return {
+                        name: volume.name,
+                        driver: volume.driver,
+                        mountpoint: volume.mountpoint || '',
+                        created: volume.created || '',
+                        size: volume.size || '',
+                        scope: volume.scope || '',
+                        getDisplayInfo: function() {
+                            const details = [];
+                            if (this.driver) details.push(`Driver: ${this.driver}`);
+                            if (this.mountpoint) details.push(`Ruta: ${this.mountpoint}`);
+                            if (this.size && this.size !== '') details.push(`Tamaño: ${this.size}`);
+                            if (this.scope && this.scope !== 'local') details.push(`Scope: ${this.scope}`);
+                            return details.join(' | ') || 'Sin detalles';
+                        }
+                    };
+                }
+            });
+            
+            volumesList.innerHTML = processedVolumes.map(volume => `
                 <div class="item">
                     <div class="item-info">
                         <div class="item-name">${volume.name}</div>
                         <div class="item-details">
-                            Driver: ${volume.driver}
+                            ${volume.getDisplayInfo()}
                         </div>
                     </div>
+                    <button class="delete-btn" onclick="dashboardPage.deleteVolume('${volume.name}')" title="Borrar volumen">
+                        <span class="delete-icon">🗑️</span>
+                        Borrar
+                    </button>
                 </div>
             `).join('');
         } catch (error) {
@@ -136,7 +215,7 @@ class DashboardPage extends BaseComponent {
     }
 
     getContainerControls(container) {
-        const isRunning = container.status.includes('Up');
+        const isRunning = container.isRunning();
         const isStopped = !isRunning;
         const isExited = container.status.includes('Exited');
         const isCreated = container.status.includes('Created');
@@ -157,9 +236,10 @@ class DashboardPage extends BaseComponent {
             </button>`);
         }
         
-        controls.push(`<button class="control-btn remove" onclick="dashboardPage.removeContainer('${container.id}')">
+        const removeButtonDisabled = isRunning ? 'disabled' : '';
+        controls.push(`<button class="control-btn remove" onclick="dashboardPage.removeContainer('${container.id}')" ${removeButtonDisabled}>
             <span class="icon">🗑</span>
-            <span class="text">Eliminar</span>
+            <span class="text">Borrar</span>
         </button>`);
         
         // Add status badge
@@ -323,6 +403,47 @@ class DashboardPage extends BaseComponent {
         } catch (error) {
             console.error('[Dashboard] Exception deleting image:', error);
             this.showNotification(`Error al borrar imagen: ${error.message}`, 'error');
+        }
+    }
+
+    async deleteVolume(volumeName) {
+        if (!volumeName) {
+            console.error('[Dashboard] No volume name provided for deletion');
+            return;
+        }
+
+        // Confirmar antes de borrar
+        const confirmed = confirm(`¿Estás seguro de que quieres borrar el volumen ${volumeName}? Esta acción no se puede deshacer.`);
+        if (!confirmed) {
+            return;
+        }
+
+        console.log('[Dashboard] Deleting volume:', volumeName);
+        
+        try {
+            const result = await window.electronAPI.removeVolume(volumeName);
+            
+            if (result.success) {
+                console.log('[Dashboard] Volume deleted successfully');
+                this.showNotification(`Volumen ${volumeName} borrado correctamente`, 'success');
+                // Recargar la lista de volúmenes
+                await this.loadVolumes();
+            } else {
+                console.error('[Dashboard] Error deleting volume:', result.error);
+                
+                // Detectar errores comunes
+                const error = String(result.error || '');
+                if (error.includes('in use')) {
+                    this.showNotification(`Error: El volumen está siendo usado por un contenedor. Detén el contenedor primero.`, 'error');
+                } else if (error.includes('no such volume')) {
+                    this.showNotification(`Error: El volumen ${volumeName} no existe`, 'error');
+                } else {
+                    this.showNotification(`Error al borrar volumen: ${error}`, 'error');
+                }
+            }
+        } catch (error) {
+            console.error('[Dashboard] Exception deleting volume:', error);
+            this.showNotification(`Error al borrar volumen: ${error.message}`, 'error');
         }
     }
 

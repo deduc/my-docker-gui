@@ -87,7 +87,6 @@ main {
 }
 
 .container {
-    max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -104,7 +103,6 @@ main {
 
 .card:hover {
     box-shadow: var(--box-shadow-lg);
-    transform: translateY(-2px);
 }
 
 .card-header {
@@ -156,7 +154,6 @@ main {
 }
 
 .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
 }
 
@@ -167,7 +164,6 @@ main {
 
 .btn-success:hover:not(:disabled) {
     background: #218838;
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
 }
 
@@ -178,7 +174,6 @@ main {
 
 .btn-danger:hover:not(:disabled) {
     background: #c82333;
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
 }
 
@@ -189,7 +184,6 @@ main {
 
 .btn-secondary:hover:not(:disabled) {
     background: #5a4178;
-    transform: translateY(-2px);
 }
 
 .btn-outline {

@@ -1,0 +1,322 @@
+<container-header></container-header>
+
+<div class="container-content" style="padding-top: 1rem;">
+    <div class="container-row">
+        <div class="container-col left-col" style="width: 60%;">
+            <h1>Crear Contenedor</h1>
+            
+            <form id="create-container-form">
+                <!-- Nombre del contenedor -->
+                <div class="form-group">
+                    <label for="container-name">Nombre del Contenedor: <span class="required">*</span></label>
+                    <input type="text" id="container-name" name="name" placeholder="mi-contenedor" required>
+                </div>
+
+                <!-- Imagen -->
+                <div class="form-group">
+                    <label for="container-image">Imagen: <span class="required">*</span></label>
+                    <select id="container-image" name="image" required>
+                        <option value="">Selecciona una imagen...</option>
+                    </select>
+                </div>
+
+                <!-- Detach mode -->
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="detach-mode" name="detach" checked>
+                        Ejecutar en segundo plano (detach)
+                    </label>
+                </div>
+
+                <!-- Puertos -->
+                <div class="form-group">
+                    <label>Puertos:</label>
+                    <div class="ports-options">
+                        <label>
+                            <input type="checkbox" id="publish-all" name="publishAll">
+                            Abrir todos los puertos (-P)
+                        </label>
+                    </div>
+                    <div id="ports-list">
+                        <div class="port-mapping">
+                            <input type="text" placeholder="Host port" class="host-port">
+                            <span>:</span>
+                            <input type="text" placeholder="Container port" class="container-port">
+                            <button type="button" class="remove-port">-</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-port">+ Añadir puerto</button>
+                </div>
+
+                <!-- Hostname -->
+                <div class="form-group">
+                    <label for="hostname">Hostname (opcional):</label>
+                    <input type="text" id="hostname" name="hostname" placeholder="mi-host">
+                </div>
+
+                <!-- Volumen -->
+                <div class="form-group">
+                    <label for="volume">Volumen (opcional):</label>
+                    <input type="text" id="volume" name="volume" placeholder="/ruta/host:/ruta/container">
+                </div>
+
+                <!-- Variables de entorno -->
+                <div class="form-group">
+                    <label>Variables de Entorno:</label>
+                    <div id="env-list">
+                        <div class="env-var">
+                            <input type="text" placeholder="Variable" class="env-key">
+                            <input type="text" placeholder="Valor" class="env-value">
+                            <button type="button" class="remove-env">-</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-env">+ Añadir variable</button>
+                </div>
+
+                <!-- Env file -->
+                <div class="form-group">
+                    <label for="env-file">Archivo .env (opcional):</label>
+                    <input type="text" id="env-file" name="envFile" placeholder="/ruta/.env">
+                </div>
+
+                <!-- Comando -->
+                <div class="form-group">
+                    <label for="command">Comando a ejecutar (opcional):</label>
+                    <input type="text" id="command" name="command" placeholder="nginx -g 'daemon off;'">
+                </div>
+
+                <!-- Botones -->
+                <div class="form-actions">
+                    <button type="button" id="reset-form" class="btn-secondary">Limpiar formulario</button>
+                </div>
+            </form>
+        </div>
+        <div class="container-col right-col" style="width: 40%;">
+            <h1>Vista Previa</h1>
+            <div id="command-preview">
+                <div class="command-header">
+                    <h3>Comando Docker:</h3>
+                    <button type="submit" form="create-container-form" class="btn-create-container">Crear Contenedor</button>
+                </div>
+                <pre id="docker-command">docker run --name mi-contenedor nginx:latest</pre>
+                <div class="command-header">
+                    <h3>Docker Compose:</h3>
+                    <button type="submit" form="create-container-form" class="btn-create-container">Crear Contenedor</button>
+                </div>
+                <pre id="docker-compose">version: '3.8'
+services:
+  web:
+    image: nginx:latest
+    container_name: mi-contenedor
+    restart: unless-stopped</pre>
+            </div>
+            <div id="config-preview">
+                <h3>Configuración:</h3>
+                <div id="config-details">
+                    <p>Completa el formulario para ver la configuración</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container-row {
+        display: flex;
+        width: 100%;
+        gap: 2rem;
+    }
+    
+    .container-col {
+        box-sizing: border-box;
+    }
+    
+    .left-col, .right-col {
+        background-color: #2b2d42;
+        border-radius: 8px;
+        padding: 1.5rem;
+        color: white;
+    }
+    
+    .left-col {
+        padding-right: 2.5rem;
+        margin-right: 1rem;
+    }
+    
+    .right-col {
+        margin-left: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .form-group select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #4a4e69;
+        border-radius: 4px;
+        background-color: #1d1e2e;
+        color: white;
+    }
+    
+    .form-group input[type="text"] {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #4a4e69;
+        border-radius: 4px;
+        background-color: #1d1e2e;
+        color: white;
+    }
+    
+    .form-group input[type="checkbox"] {
+        margin-right: 0.5rem;
+    }
+    
+    .port-mapping, .env-var {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+    
+    .port-mapping input, .env-var input {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #4a4e69;
+        border-radius: 4px;
+        background-color: #1d1e2e;
+        color: white;
+    }
+    
+    .remove-port, .remove-env {
+        padding: 0.5rem;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    #add-port, #add-env {
+        padding: 0.5rem 1rem;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+    
+    .form-actions {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-primary {
+        padding: 0.75rem 1.5rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .command-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 1rem;
+    }
+
+    #command-preview, #config-preview {
+        margin-bottom: 2rem;
+    }
+    
+    #docker-compose {
+        background-color: #1d1e2e;
+        color: #00ff00;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    #docker-command {
+        background-color: #1d1e2e;
+        color: #00ff00;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    #config-details {
+        background-color: #1d1e2e;
+        padding: 1rem;
+        border-radius: 4px;
+    }
+    
+    .required {
+        color: #dc3545;
+        font-weight: bold;
+        margin-left: 0.25rem;
+    }
+    
+    h1 {
+        margin-bottom: 1.5rem;
+        color: #ffffff;
+    }
+    
+    h3 {
+        margin-bottom: 1rem;
+        color: #ffffff;
+    }
+    
+    .create-container-section {
+        margin-top: 2rem;
+        text-align: center;
+    }
+    
+    .btn-create-container {
+        padding: 0.5rem 1rem;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: bold;
+        width: auto;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-create-container:hover {
+        background: #218838;
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-create-container:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+</style>

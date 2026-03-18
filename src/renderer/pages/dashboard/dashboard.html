@@ -2,13 +2,15 @@
     :host {
         display: block;
         padding: 2rem;
-        max-width: 1200px;
         margin: 0 auto;
     }
 
     .dashboard-container {
+        padding-top: 1rem;
         display: grid;
         gap: 2rem;
+        height: 100%;
+        min-height: calc(100vh - 4rem);
     }
 
     .action-buttons {
@@ -30,7 +32,6 @@
     }
 
     .action-card:hover {
-        transform: translateY(-4px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         border-color: #5865f2;
     }
@@ -59,13 +60,16 @@
     }
 
     .action-card .btn:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(88, 101, 242, 0.4);
     }
 
     .info-sections {
         display: grid;
+        grid-template-columns: repeat(3, 30%);
         gap: 2rem;
+        height: 100%;
+        min-height: 0;
+        justify-content: center;
     }
 
     .info-section {
@@ -74,6 +78,9 @@
         padding: 1.5rem;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         border: 1px solid #4f545c;
+        min-height: fit-content;
+        display: flex;
+        flex-direction: column;
     }
 
     .info-section h2 {
@@ -94,11 +101,13 @@
     }
 
     .items-grid {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
     }
 
     .item {
+        height: 8rem;
         padding: 1rem;
         background: #40444b;
         border-radius: 8px;
@@ -111,11 +120,13 @@
 
     .item:hover {
         background: #4f545c;
-        transform: translateX(4px);
     }
 
     .item-info {
         flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        margin-right: 1rem;
     }
 
     .item-name {
@@ -127,6 +138,9 @@
     .item-details {
         font-size: 0.9rem;
         color: #b9bbbe;
+        word-wrap: break-word;
+        white-space: normal;
+        line-height: 1.4;
     }
 
     .item.downloading {
@@ -204,7 +218,6 @@
     }
 
     .control-btn:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 
@@ -276,7 +289,6 @@
 
     .delete-btn:hover {
         background: linear-gradient(135deg, #c03538, #a02822);
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
     }
 
@@ -288,31 +300,38 @@
         font-size: 0.9rem;
     }
 
-    .section-header {
+    .button-row {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: row;
+        gap: 0.5rem;
         margin-bottom: 1rem;
+        justify-content: flex-end;
+        padding-top: 1rem;
     }
 
-    .add-image-btn {
-        background: linear-gradient(135deg, #3ba55c, #2d7a46);
-        color: white;
+    .btn-base {
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 6px;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
         gap: 0.3rem;
         font-weight: 500;
+        min-width: 120px;
+        justify-content: center;
+        height: 40px;
+    }
+
+    .add-image-btn {
+        background: #3ba55c;
+        color: white;
     }
 
     .add-image-btn:hover {
-        background: linear-gradient(135deg, #2d7a46, #236638);
-        transform: translateY(-2px);
+        background: #2d7a46;
         box-shadow: 0 4px 8px rgba(39, 167, 92, 0.4);
     }
 
@@ -517,7 +536,6 @@
 
     .btn-primary:hover:not(:disabled) {
         background: #4752c8;
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(88, 101, 242, 0.4);
     }
 
@@ -567,12 +585,17 @@
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.9rem;
-        margin-top: 1rem;
         transition: all 0.3s ease;
     }
 
     .refresh-btn:hover {
         background: #5865f2;
+    }
+
+    @media (max-width: 1024px) {
+        .info-sections {
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 768px) {
@@ -593,49 +616,39 @@
 </style>
 
 <div class="dashboard-container">
-    <div class="action-buttons">
-        <div class="action-card" onclick="window.appRouter.navigate('create-single')">
-            <h3>🐳 Crear Contenedor</h3>
-            <p>Genera y ejecuta un contenedor Docker individual con configuración personalizada</p>
-            <button class="btn">Comenzar</button>
-        </div>
-        
-        <div class="action-card" onclick="window.appRouter.navigate('create-multiple')">
-            <h3>🔄 Múltiples Contenedores</h3>
-            <p>Crea redes de contenedores o configura Docker Compose para aplicaciones complejas</p>
-            <button class="btn">Comenzar</button>
-        </div>
-    </div>
-
     <div class="info-sections">
         <div class="info-section">
             <h2>Todos los Contenedores</h2>
+            <div class="button-row">
+                <button class="btn-base refresh-btn" data-action="refresh-containers">Actualizar</button>
+            </div>
             <div id="containers-list" class="items-grid">
                 <div class="loading">Cargando contenedores...</div>
             </div>
-            <button class="refresh-btn" data-action="refresh-containers">Actualizar</button>
         </div>
 
         <div class="info-section">
-            <div class="section-header">
-                <h2>Imágenes Disponibles</h2>
-                <button class="add-image-btn" onclick="dashboardPage.showAddImageDialog()">
-                    <span class="add-icon">➕</span>
+            <h2>Imágenes Disponibles</h2>
+            <div class="button-row">
+                <button class="btn-base refresh-btn" data-action="refresh-images">Actualizar</button>
+                <button class="btn-base add-image-btn" onclick="dashboardPage.showAddImageDialog()">
+                    <span class="add-icon">+</span>
                     Añadir Imagen
                 </button>
             </div>
             <div id="images-list" class="items-grid">
                 <div class="loading">Cargando imágenes...</div>
             </div>
-            <button class="refresh-btn" data-action="refresh-images">Actualizar</button>
         </div>
 
         <div class="info-section">
             <h2>Volúmenes</h2>
+            <div class="button-row">
+                <button class="btn-base refresh-btn" data-action="refresh-volumes">Actualizar</button>
+            </div>
             <div id="volumes-list" class="items-grid">
                 <div class="loading">Cargando volúmenes...</div>
             </div>
-            <button class="refresh-btn" data-action="refresh-volumes">Actualizar</button>
         </div>
     </div>
 </div>

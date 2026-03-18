@@ -33,12 +33,13 @@
             padding: 0;
             background: transparent;
             width: 100%;
-            max-width: 1200px;
         }
 
         #main-content {
-            width: 100%;
+            width: auto;
             height: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
 
         /* Global styles for loading and error states */
@@ -121,9 +122,8 @@
     <script src="components/header.js"></script>
     
     <!-- Pages -->
-    <script src="pages/dashboard.js"></script>
-    <script src="pages/create-single.js"></script>
-    <script src="pages/create-multiple.js"></script>
+    <script src="pages/dashboard/dashboard.js"></script>
+    <script src="pages/create-container/create-container.js"></script>
     
     <!-- Router -->
     <script src="router.js"></script>
